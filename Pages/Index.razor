@@ -1,3 +1,35 @@
 @page "/access"
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
 
-<h1>Hi</h1>
+<h1>Acceso</h1>
+
+<div>
+    <label for="key">Clave de acceso: </label>
+    <input type="password" id="key" @bind="key" />
+    <button @onclick="Access">Acceder</button>
+
+</div>
+
+<p>@message</p>
+
+@code {
+    private string? key = null;
+    private string? message = null;
+
+    private async Task Access()
+    {
+        var response = await Http.PostAsJsonAsync("api/access", key);
+        if (response.IsSuccessStatusCode) {
+            
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "key", key);
+            message = "Acceso concedido";
+
+            NavigationManager.NavigateTo("/services");
+
+        } else {
+            message = "Clave incorrecta";
+        }
+    }
+}
