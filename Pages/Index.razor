@@ -24,12 +24,12 @@
         if (response.IsSuccessStatusCode) {
 
             var isAuthenticated = await response.Content.ReadAsStringAsync();
-
-            if (isAuthenticated == "true") {
+            if (Boolean.Parse(isAuthenticated)) {
                 await JSRuntime.InvokeVoidAsync("localStorage.setItem", "key", "true");
                 message = "Acceso concedido";
 
-                NavigationManager.NavigateTo("/services");
+                NavigationManager.NavigateTo("/credencial");
+                return;
             }
             message = "Clave incorrecta";
         }
