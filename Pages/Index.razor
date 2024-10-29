@@ -22,13 +22,15 @@
     {
         var response = await Http.PostAsJsonAsync("/api/authenticate", key);
         if (response.IsSuccessStatusCode) {
-            
-            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "key", key);
-            message = "Acceso concedido";
 
-            NavigationManager.NavigateTo("/services");
+            var isAuthenticated = await response.Content.ReadAsStringAsync();
 
-        } else {
+            if (isAuthenticated == "true") {
+                await JSRuntime.InvokeVoidAsync("localStorage.setItem", "key", "true");
+                message = "Acceso concedido";
+
+                NavigationManager.NavigateTo("/services");
+            }
             message = "Clave incorrecta";
         }
     }
