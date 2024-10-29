@@ -20,7 +20,7 @@
 
     private async Task Access()
     {
-        var response = await Http.PostAsJsonAsync("api/access", key);
+        var response = await Http.PostAsJsonAsync("/api/authenticate", key);
         if (response.IsSuccessStatusCode) {
             
             await JSRuntime.InvokeVoidAsync("localStorage.setItem", "key", key);
