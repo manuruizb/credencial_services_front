@@ -3,45 +3,86 @@
 @inject HttpClient HttpClient
 @inject NavigationManager NavigationManager
 
-<h1>Crear credencial</h1>
+<div class="container-credential">
+<section>
+    <div class="glass">
+        <h1>Crear credencial</h1>
 
-<div>
-    <label for="servicio">Nombre del servicio:</label>
-    <input @bind="servicio" id="servicio" />
+            <div>
+                <label for="servicio">Nombre del servicio:</label>
+                <input @bind="servicio" id="servicio" class="form-control"/>
+            </div> 
+
+            <div>
+                <label for="usuario">Usuario:</label>
+                <input @bind="usuario" id="usuario" class="form-control"/>
+            </div>
+
+            <div>
+                <label for="password">Contraseña:</label>
+                <input @bind="password" id="password" class="form-control"/>
+            </div>
+            <br>
+            <button @onclick="CrearCredencial" class="btn btn-info">Crear</button>
+    </div>
+    
+
+</section>
+
+<section>
+    <div class="glass">
+        <h2>Lista de Credenciales</h2>
+        <div class="search">
+            <input type="text" @bind="search" id="search" class="form-control">
+            <button @onclick="BuscarCredencial" class="btn btn-secondary">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+        </div>
+            @if (flag == false)
+            {
+                    <small class="text-danger">
+                      <strong>
+                        No se encontró
+                      </strong>  
+                    </small>
+            }
+
+        <br>
+    
+
+        <ul>
+            @foreach (var credencial in credenciales)
+            {
+                    <li>
+                        <span> @credencial.servicio (@credencial.usuario) </span>
+                        <button @onclick="() => EliminarCredencial(credencial.usuario)" class="btn btn-sm btn-danger">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </li>
+                    
+            }
+        </ul>
+    </div>
+    
+</section>
 </div>
-
-<div>
-    <label for="usuario">Usuario:</label>
-    <input @bind="usuario" id="usuario" />
-</div>
-
-<div>
-    <label for="password">Contraseña:</label>
-    <input @bind="password" id="password" />
-</div>
-
-<button @onclick="CrearCredencial">Crear</button>
-
-<h2>Lista de Credenciales</h2>
-
-<ul>
-    @foreach(var credencial in crendenciales) {
-        <li>@credencial.servicio (@credencial.usuario)</li>
-    }
-</ul>
 
 @code {
     private string servicio;
     private string usuario;
     private string password;
+    private string search;
+    private bool flag = true;
 
-    private List<CredencialDto> crendenciales = new List<CredencialDto>();
-    
-    protected override async Task OnInitializedAsync(){
+    private List<CredencialDto> credenciales = new List<CredencialDto>();
+
+    protected override async Task OnInitializedAsync()
+    {
 
         var isAuthenticated = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "key");
 
-        if (isAuthenticated != "true") {
+        if (isAuthenticated != "true")
+        {
             NavigationManager.NavigateTo("/accesss");
         }
 
@@ -50,12 +91,13 @@
 
     private async Task CrearCredencial()
     {
-        var credencial = new CredencialDto { 
-            servicio = this.servicio, 
-            usuario = this.usuario, 
-            password = this.password 
-        
-        };
+        var credencial = new CredencialDto
+            {
+                servicio = this.servicio,
+                usuario = this.usuario,
+                password = this.password
+
+            };
         var response = await HttpClient.PostAsJsonAsync("/api/credenciales", credencial);
 
         if (response.IsSuccessStatusCode)
@@ -67,7 +109,39 @@
     private async Task cargarCredenciales()
     {
         var response = await HttpClient.GetFromJsonAsync<List<CredencialDto>>("/api/credenciales");
-        this.crendenciales = response ?? new List<CredencialDto>();
+        this.credenciales = response ?? new List<CredencialDto>();
+    }
+
+    private async Task BuscarCredencial()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(this.search))
+            {
+                await cargarCredenciales();
+            }
+            else
+            {
+                var response = await HttpClient.GetFromJsonAsync<CredencialDto>($"/api/search?search={this.search}");
+
+                credenciales = new List<CredencialDto>();
+
+                credenciales.Add(response!);
+
+                this.flag = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            this.flag = false;
+        }
+    }
+
+
+    private async Task EliminarCredencial(string usuario)
+    {
+        await HttpClient.DeleteAsync($"/api/delete?usuario={usuario}");
+        await cargarCredenciales();
     }
 
     public class CredencialDto

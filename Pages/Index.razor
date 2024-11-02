@@ -3,16 +3,19 @@
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
 
-<h1>Acceso</h1>
+<section class="glass">
+    <h1>Acceso</h1>
 
-<div>
-    <label for="key">Clave de acceso: </label>
-    <input type="password" id="key" @bind="key" />
-    <button @onclick="Access">Acceder</button>
+    <div>
+        <label for="key">Clave de acceso: </label>
+        <input type="password" id="key" @bind="key" class="form-control mb-3"/>
+        <button @onclick="Access" class="btn btn-info">Acceder</button>
 
-</div>
+    </div>
 
-<p>@message</p>
+    <p>@message</p>
+</section>
+
 
 @code {
     private string? key = null;
